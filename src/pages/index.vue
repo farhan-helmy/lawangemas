@@ -1,7 +1,31 @@
 <script setup>
-function login(data) {
-  console.log(data);
+import { useAuthStore } from "@/stores/auth";
+import { useRouter, useRoute } from "vue-router";
+import { onMounted, ref } from "vue";
+import ErrorComponent from "../components/error/ErrorComponent.vue";
+
+let router = useRouter();
+let route = useRoute();
+let authStore = useAuthStore();
+
+let errorMessage = ref("");
+let error = ref(false);
+async function submitHandler(data) {
+  await authStore.loginUser(data);
+
+  if (authStore.authErrorMessage) {
+    error.value = true;
+  } else {
+    router.push("/dashboard");
+  }
 }
+
+onMounted(() => {
+  if (Object.keys(route.query).length !== 0) {
+    error.value = true;
+    errorMessage.value = route.query.status;
+  }
+});
 </script>
 
 <template>
@@ -17,6 +41,14 @@ function login(data) {
         px-4
       "
     >
+      <div v-auto-animate>
+        <ErrorComponent
+          v-if="error"
+          :error-message="authStore.authErrorMessage || errorMessage || ''"
+          @close="error = false"
+        />
+      </div>
+
       <div class="flex flex-col items-center justify-center">
         <div class="text-6xl font-semibold">Sizzling Aeon</div>
         <div
@@ -31,7 +63,21 @@ function login(data) {
             Login to your account
           </p>
 
-          <div></div>
+          <div class="pt-4">
+            <FormKit type="form" submit-label="Login" @submit="submitHandler">
+              <FormKit
+                name="email"
+                label="Email address"
+                validation="required|email"
+              />
+              <FormKit
+                name="password"
+                label="Password"
+                validation="required"
+                type="password"
+              />
+            </FormKit>
+          </div>
         </div>
       </div>
     </div>

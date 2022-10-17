@@ -1,11 +1,37 @@
-export async function login(data) {
-  let res = await fetch(`${process.env.API_URL_LOCAL}/auth/user/login`, {
-    method: "POST", // or 'PUT'
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+export default async function login(data) {
+  try {
+    let res = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/auth/user/login`,
+      {
+        method: "POST", // or 'PUT'
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(data),
+      }
+    );
 
-  return res.json();
+    return await res.json();
+  } catch (e) {
+    throw new Error(e);
+  }
+}
+
+export function getUser() {
+  let user = fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/user/me`, {
+    credentials: "include",
+  })
+    .then((response) => response.json())
+    .then((user) => {
+      return user;
+    })
+    .catch((e) => {
+      throw new Error(e);
+    });
+  return user;
+}
+
+export async function logout() {
+  await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/user/logout`);
 }
